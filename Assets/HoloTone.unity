@@ -411,20 +411,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8167d72ba59b444fa11a7d293207a68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  topObject: {fileID: 1167539631}
   padObject: {fileID: 1683186735}
   keyLeftObject: {fileID: 542531929}
+  keyRightObject: {fileID: 1029125855}
   effectObject: {fileID: 1628499382105628, guid: 79d6617ca4ee56644882ed3cd5a139e1,
     type: 2}
   spikeObject: {fileID: 1331968773246450, guid: 33c19a108aabbd54892c86e63b105273,
     type: 2}
-  boxObject: {fileID: 1714552642160842, guid: 33186312187ae764cb36586685da3d95, type: 2}
+  yellowBoxObject: {fileID: 1714552642160842, guid: 33186312187ae764cb36586685da3d95,
+    type: 2}
+  redBoxObject: {fileID: 1714552642160842, guid: aea1ae1654c1067449b3004c3aea7f2c,
+    type: 2}
   forcce: 5
   spikeXNum: 16
   spikeZNum: 16
   spikeDownSpeed: 1
   spikeHightMin: 0.0001
-  boxXNum: 16
-  boxZNum: 16
+  leftBoxXNum: 5
+  leftBoxZNum: 5
+  rightBoxXNum: 16
+  rightBoxZNum: 16
   boxDownSpeed: 0.05
   boxHightMin: 0.0001
 --- !u!114 &1585561229

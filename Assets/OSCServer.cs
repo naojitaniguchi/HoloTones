@@ -4,11 +4,14 @@ using UnityEngine;
 using uOSC;
 
 public class OSCServer : MonoBehaviour {
+    public GameObject topObject;
     public GameObject padObject;
     public GameObject keyLeftObject;
+    public GameObject keyRightObject;
     public GameObject effectObject;
     public GameObject spikeObject;
-    public GameObject boxObject;
+    public GameObject yellowBoxObject;
+    public GameObject redBoxObject;
     float[] values;
     int index;
     public float forcce;
@@ -22,19 +25,29 @@ public class OSCServer : MonoBehaviour {
     public float spikeDownSpeed = 1.0f;
     public float spikeHightMin = 0.0001f;
 
-    float keyWidth;
-    float keyDepth;
-    float boxStepX;
-    float boxStepZ;
-    float boxOriginalHeight;
-    public int boxXNum = 16;
-    public int boxZNum = 16;
+    float leftKeyWidth;
+    float leftKeyDepth;
+    float leftBoxStepX;
+    float leftBoxStepZ;
+    float leftBoxOriginalHeight;
+    public int leftBoxXNum = 16;
+    public int leftBoxZNum = 16;
+
+    float rightKeyWidth;
+    float rightKeyDepth;
+    float rightBoxStepX;
+    float rightBoxStepZ;
+    float rightBoxOriginalHeight;
+    public int rightBoxXNum = 16;
+    public int rightBoxZNum = 16;
+
     public float boxDownSpeed = 1.0f;
     public float boxHightMin = 0.0001f;
 
 
     GameObject[] spikeArray;
-    GameObject[] boxArray;
+    GameObject[] yellowBoxArray;
+    GameObject[] redBoxArray;
 
     void createSpikes(){
         spikeOriginalScale = spikeObject.transform.localScale;
@@ -57,32 +70,61 @@ public class OSCServer : MonoBehaviour {
                 GameObject obj = Instantiate(spikeObject, pos, Quaternion.identity);
                 obj.transform.localScale = new Vector3(obj.transform.localScale.x, spikeHightMin, obj.transform.localScale.z);
                 spikeArray[count] = obj;
+                obj.transform.SetParent(topObject.transform);
                 count++;
             }
         }
     }
 
-    void createBoxes()
+    void createYellowBoxes()
     {
-        keyWidth = keyLeftObject.transform.localScale.x;
-        keyDepth = keyLeftObject.transform.localScale.z;
-        boxStepX = keyWidth / (float)(boxXNum - 1);
-        boxStepZ = keyDepth / (float)(boxZNum - 1);
-        boxOriginalHeight = boxObject.transform.localScale.y;
+        leftKeyWidth = keyLeftObject.transform.localScale.x;
+        leftKeyDepth = keyLeftObject.transform.localScale.z;
+        leftBoxStepX = leftKeyWidth / (float)(leftBoxXNum - 1);
+        leftBoxStepZ = leftKeyDepth / (float)(leftBoxZNum - 1);
+        leftBoxOriginalHeight = yellowBoxObject.transform.localScale.y;
 
-        boxArray = new GameObject[boxXNum * boxZNum];
+        yellowBoxArray = new GameObject[leftBoxXNum * leftBoxZNum];
 
         int count = 0;
-        for (int i = 0; i < boxXNum; i++)
+        for (int i = 0; i < leftBoxXNum; i++)
         {
-            float xPos = keyWidth * -0.5f + (float)i * boxStepX - boxStepX * 0.5f ;
-            for (int j = 0; j < boxZNum; j++)
+            float xPos = leftKeyWidth * -0.5f + (float)i * leftBoxStepX - leftBoxStepX * 0.5f ;
+            for (int j = 0; j < leftBoxZNum; j++)
             {
-                float zPos = keyDepth * -0.5f + (float)j * boxStepZ + boxStepZ * 0.5f;
+                float zPos = leftKeyDepth * -0.5f + (float)j * leftBoxStepZ + leftBoxStepZ * 0.5f;
                 Vector3 pos = new Vector3(keyLeftObject.transform.position.x + xPos, keyLeftObject.transform.position.y, keyLeftObject.transform.position.z + zPos);
-                GameObject obj = Instantiate(boxObject, pos, Quaternion.identity);
-                obj.transform.localScale = new Vector3(boxStepX, boxHightMin, boxStepZ);
-                boxArray[count] = obj;
+                GameObject obj = Instantiate(yellowBoxObject, pos, Quaternion.identity);
+                obj.transform.localScale = new Vector3(leftBoxStepX, boxHightMin, leftBoxStepZ);
+                yellowBoxArray[count] = obj;
+                obj.transform.SetParent(topObject.transform);
+                count++;
+            }
+        }
+    }
+
+    void createRedBoxes()
+    {
+        rightKeyWidth = keyRightObject.transform.localScale.x;
+        rightKeyDepth = keyRightObject.transform.localScale.z;
+        rightBoxStepX = rightKeyWidth / (float)(rightBoxXNum - 1);
+        rightBoxStepZ = rightKeyDepth / (float)(rightBoxZNum - 1);
+        rightBoxOriginalHeight = redBoxObject.transform.localScale.y;
+
+        redBoxArray = new GameObject[rightBoxXNum * rightBoxZNum];
+
+        int count = 0;
+        for (int i = 0; i < rightBoxXNum; i++)
+        {
+            float xPos = rightKeyWidth * -0.5f + (float)i * rightBoxStepX - rightBoxStepX * 0.5f;
+            for (int j = 0; j < rightBoxZNum; j++)
+            {
+                float zPos = rightKeyDepth * -0.5f + (float)j * rightBoxStepZ + rightBoxStepZ * 0.5f;
+                Vector3 pos = new Vector3(keyRightObject.transform.position.x + xPos, keyRightObject.transform.position.y, keyRightObject.transform.position.z + zPos);
+                GameObject obj = Instantiate(redBoxObject, pos, Quaternion.identity);
+                obj.transform.localScale = new Vector3(rightBoxStepX, boxHightMin, rightBoxStepZ);
+                redBoxArray[count] = obj;
+                obj.transform.SetParent(topObject.transform);
                 count++;
             }
         }
@@ -96,7 +138,8 @@ public class OSCServer : MonoBehaviour {
         values = new float[3];
 
         createSpikes();
-        createBoxes();
+        createYellowBoxes();
+        createRedBoxes();
     }
 
     void moveSpike( float x, float z)
@@ -111,16 +154,28 @@ public class OSCServer : MonoBehaviour {
         spikeArray[targetSpike].transform.position = new Vector3(spikeArray[targetSpike].transform.position.x, yPos, spikeArray[targetSpike].transform.position.z);
     }
 
-    void moveBox(float x, float z)
+    void moveYellowBox(float x, float z)
     {
-        int xIndex = (int)(x * boxXNum);
-        int zIndex = (int)(z * boxZNum);
+        int xIndex = (int)(x * leftBoxXNum);
+        int zIndex = (int)(z * leftBoxZNum);
 
-        int targetBox = xIndex * boxXNum + zIndex;
-        boxArray[targetBox].transform.localScale = new Vector3(boxStepX, boxOriginalHeight, boxStepX);
+        int targetBox = xIndex * leftBoxXNum + zIndex;
+        yellowBoxArray[targetBox].transform.localScale = new Vector3(leftBoxStepX, leftBoxOriginalHeight, leftBoxStepX);
 
-        float yPos = boxOriginalHeight * 0.5f + keyLeftObject.transform.position.y;
-        boxArray[targetBox].transform.position = new Vector3(boxArray[targetBox].transform.position.x, yPos, boxArray[targetBox].transform.position.z);
+        float yPos = leftBoxOriginalHeight * 0.5f + keyLeftObject.transform.position.y;
+        yellowBoxArray[targetBox].transform.position = new Vector3(yellowBoxArray[targetBox].transform.position.x, yPos, yellowBoxArray[targetBox].transform.position.z);
+    }
+
+    void moveRedBox(float x, float z)
+    {
+        int xIndex = (int)(x * rightBoxXNum);
+        int zIndex = (int)(z * rightBoxZNum);
+
+        int targetBox = xIndex * rightBoxXNum + zIndex;
+        redBoxArray[targetBox].transform.localScale = new Vector3(rightBoxStepX, rightBoxOriginalHeight, rightBoxStepX);
+
+        float yPos = rightBoxOriginalHeight * 0.5f + keyRightObject.transform.position.y;
+        redBoxArray[targetBox].transform.position = new Vector3(redBoxArray[targetBox].transform.position.x, yPos, redBoxArray[targetBox].transform.position.z);
     }
 
     void updateSpikes()
@@ -143,22 +198,42 @@ public class OSCServer : MonoBehaviour {
         }
     }
 
-    void updateBoxes()
+    void updateYellowBoxes()
     {
-        for (int i = 0; i < boxXNum; i++)
+        for (int i = 0; i < leftBoxXNum; i++)
         {
-            for (int j = 0; j < boxXNum; j++)
+            for (int j = 0; j < leftBoxXNum; j++)
             {
-                int targetBox = i * boxXNum + j;
-                float boxHeight = boxArray[targetBox].transform.localScale.y;
+                int targetBox = i * leftBoxXNum + j;
+                float boxHeight = yellowBoxArray[targetBox].transform.localScale.y;
                 boxHeight -= boxDownSpeed * Time.deltaTime;
                 if (boxHeight < boxHightMin)
                 {
                     boxHeight = boxHightMin;
                 }
-                boxArray[targetBox].transform.localScale = new Vector3(boxStepX, boxHeight, boxStepZ);
+                yellowBoxArray[targetBox].transform.localScale = new Vector3(leftBoxStepX, boxHeight, leftBoxStepZ);
                 float boxY = boxHeight * 0.5f + keyLeftObject.transform.position.y;
-                boxArray[targetBox].transform.position = new Vector3(boxArray[targetBox].transform.position.x, boxY, boxArray[targetBox].transform.position.z);
+                yellowBoxArray[targetBox].transform.position = new Vector3(yellowBoxArray[targetBox].transform.position.x, boxY, yellowBoxArray[targetBox].transform.position.z);
+            }
+        }
+    }
+
+    void updateRedBoxes()
+    {
+        for (int i = 0; i < rightBoxXNum; i++)
+        {
+            for (int j = 0; j < rightBoxXNum; j++)
+            {
+                int targetBox = i * rightBoxXNum + j;
+                float boxHeight = redBoxArray[targetBox].transform.localScale.y;
+                boxHeight -= boxDownSpeed * Time.deltaTime;
+                if (boxHeight < boxHightMin)
+                {
+                    boxHeight = boxHightMin;
+                }
+                redBoxArray[targetBox].transform.localScale = new Vector3(rightBoxStepX, boxHeight, rightBoxStepZ);
+                float boxY = boxHeight * 0.5f + keyRightObject.transform.position.y;
+                redBoxArray[targetBox].transform.position = new Vector3(redBoxArray[targetBox].transform.position.x, boxY, redBoxArray[targetBox].transform.position.z);
             }
         }
     }
@@ -172,11 +247,13 @@ public class OSCServer : MonoBehaviour {
 
             // addCenterPad(x, y);
             moveSpike(x, y);
-            moveBox(x, y);
-            
+            moveYellowBox(x, y);
+            moveRedBox(x, y);
+
         }
         updateSpikes();
-        updateBoxes();
+        updateYellowBoxes();
+        updateRedBoxes();
 
     }
 
