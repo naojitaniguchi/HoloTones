@@ -12,6 +12,8 @@ public class OSCServer : MonoBehaviour {
     public GameObject spikeObject;
     public GameObject yellowBoxObject;
     public GameObject redBoxObject;
+    public float keyMoveSpeed = 1.0f ;
+    public float keyRotSpeed = 5.0f;
     float[] values;
     int index;
     public float forcce;
@@ -98,6 +100,7 @@ public class OSCServer : MonoBehaviour {
                 obj.transform.localScale = new Vector3(leftBoxStepX, boxHightMin, leftBoxStepZ);
                 yellowBoxArray[count] = obj;
                 obj.transform.SetParent(topObject.transform);
+                obj.SetActive(false);
                 count++;
             }
         }
@@ -125,6 +128,7 @@ public class OSCServer : MonoBehaviour {
                 obj.transform.localScale = new Vector3(rightBoxStepX, boxHightMin, rightBoxStepZ);
                 redBoxArray[count] = obj;
                 obj.transform.SetParent(topObject.transform);
+                obj.SetActive(false);
                 count++;
             }
         }
@@ -240,6 +244,75 @@ public class OSCServer : MonoBehaviour {
 
     // Update is called once per frame
     void Update () {
+        if (Input.GetKey(KeyCode.UpArrow))
+        {
+            topObject.transform.position = new Vector3(topObject.transform.position.x, topObject.transform.position.y, topObject.transform.position.z + keyMoveSpeed * Time.deltaTime);
+        }
+        if (Input.GetKey(KeyCode.DownArrow))
+        {
+            topObject.transform.position = new Vector3(topObject.transform.position.x, topObject.transform.position.y, topObject.transform.position.z - keyMoveSpeed * Time.deltaTime);
+        }
+        if (Input.GetKey(KeyCode.LeftArrow))
+        {
+            topObject.transform.position = new Vector3(topObject.transform.position.x - keyMoveSpeed * Time.deltaTime, topObject.transform.position.y, topObject.transform.position.z);
+        }
+        if (Input.GetKey(KeyCode.RightArrow))
+        {
+            topObject.transform.position = new Vector3(topObject.transform.position.x + keyMoveSpeed * Time.deltaTime, topObject.transform.position.y, topObject.transform.position.z);
+        }
+        if (Input.GetKey(KeyCode.A))
+        {
+            topObject.transform.position = new Vector3(topObject.transform.position.x , topObject.transform.position.y + keyMoveSpeed * Time.deltaTime, topObject.transform.position.z);
+        }
+        if (Input.GetKey(KeyCode.Z))
+        {
+            topObject.transform.position = new Vector3(topObject.transform.position.x, topObject.transform.position.y - keyMoveSpeed * Time.deltaTime, topObject.transform.position.z);
+        }
+        if (Input.GetKey(KeyCode.Q))
+        {
+            topObject.transform.Rotate(0.0f, keyRotSpeed * Time.deltaTime, 0.0f);
+        }
+        if (Input.GetKey(KeyCode.W))
+        {
+            topObject.transform.Rotate(0.0f, -1.0f * keyRotSpeed * Time.deltaTime, 0.0f);
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            if (keyRightObject.activeSelf == false)
+            {
+                keyRightObject.SetActive(true);
+                for (int i = 0; i < rightBoxXNum * rightBoxZNum; i++)
+                {
+                    redBoxArray[i].SetActive(true);
+                }
+            }
+            else
+            {
+                keyRightObject.SetActive(false);
+                for (int i = 0; i < rightBoxXNum * rightBoxZNum; i++)
+                {
+                    redBoxArray[i].SetActive(false);
+                }
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            if (keyLeftObject.activeSelf == false)
+            {
+                keyLeftObject.SetActive(true);
+                for (int i = 0; i < leftBoxXNum * leftBoxZNum; i++)
+                {
+                    yellowBoxArray[i].SetActive(true);
+                }
+            }else
+            {
+                keyLeftObject.SetActive(false);
+                for (int i = 0; i < leftBoxXNum * leftBoxZNum; i++)
+                {
+                    yellowBoxArray[i].SetActive(false);
+                }
+            }
+        }
         if (Input.GetMouseButton(0))
         {
             float x = Input.mousePosition.x / (float)Screen.width ;
@@ -294,8 +367,47 @@ public class OSCServer : MonoBehaviour {
                 }
                 count++;
             }
-            addCenterPad(values[0], values[1]);
-            //Instantiate(effectObjct, gameObject.transform.position, Quaternion.identity);
+            moveSpike(values[0], values[1]);
+        }
+
+        if (message.address == "/key1")
+        {
+            // values
+            int count = 0;
+            foreach (var value in message.values)
+            {
+                msg += value.GetString() + " ";
+                if (count == 0)
+                {
+                    index = (int)value;
+                }
+                else
+                {
+                    values[count - 1] = (float)value;
+                }
+                count++;
+            }
+            moveRedBox(values[0], values[1]);
+        }
+
+        if (message.address == "/key2")
+        {
+            // values
+            int count = 0;
+            foreach (var value in message.values)
+            {
+                msg += value.GetString() + " ";
+                if (count == 0)
+                {
+                    index = (int)value;
+                }
+                else
+                {
+                    values[count - 1] = (float)value;
+                }
+                count++;
+            }
+            moveYellowBox(values[0], values[1]);
         }
         Debug.Log(msg);
     }
