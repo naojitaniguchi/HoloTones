@@ -12,6 +12,10 @@ public class OSCServer : MonoBehaviour {
     public GameObject spikeObject;
     public GameObject yellowBoxObject;
     public GameObject redBoxObject;
+    public GameObject textObject;
+    public GameObject textLeftObject;
+    public GameObject textRightObject;
+    public GameObject raibowCubeObject;
     public float keyMoveSpeed = 1.0f ;
     public float keyRotSpeed = 5.0f;
     float[] values;
@@ -148,8 +152,9 @@ public class OSCServer : MonoBehaviour {
 
     void moveSpike( float x, float z)
     {
+        float zReverse = 1.0f - z;
         int xIndex = (int)(x * spikeXNum);
-        int zIndex = (int)(z * spikeZNum);
+        int zIndex = (int)(zReverse * spikeZNum);
 
         int targetSpike = xIndex * spikeXNum + zIndex;
         spikeArray[targetSpike].transform.localScale = new Vector3(spikeOriginalScale.x, spikeOriginalScale.y, spikeOriginalScale.z);
@@ -246,19 +251,23 @@ public class OSCServer : MonoBehaviour {
     void Update () {
         if (Input.GetKey(KeyCode.UpArrow))
         {
-            topObject.transform.position = new Vector3(topObject.transform.position.x, topObject.transform.position.y, topObject.transform.position.z + keyMoveSpeed * Time.deltaTime);
+            Vector3 moveVec = topObject.transform.forward * keyMoveSpeed * Time.deltaTime;
+            topObject.transform.position = new Vector3(topObject.transform.position.x + moveVec.x, topObject.transform.position.y, topObject.transform.position.z + moveVec.z);
         }
         if (Input.GetKey(KeyCode.DownArrow))
         {
-            topObject.transform.position = new Vector3(topObject.transform.position.x, topObject.transform.position.y, topObject.transform.position.z - keyMoveSpeed * Time.deltaTime);
+            Vector3 moveVec = topObject.transform.forward * keyMoveSpeed * Time.deltaTime * -1.0f ;
+            topObject.transform.position = new Vector3(topObject.transform.position.x + moveVec.x, topObject.transform.position.y, topObject.transform.position.z + moveVec.z);
         }
         if (Input.GetKey(KeyCode.LeftArrow))
         {
-            topObject.transform.position = new Vector3(topObject.transform.position.x - keyMoveSpeed * Time.deltaTime, topObject.transform.position.y, topObject.transform.position.z);
+            Vector3 moveVec = topObject.transform.right * keyMoveSpeed * Time.deltaTime * -1.0f;
+            topObject.transform.position = new Vector3(topObject.transform.position.x + moveVec.x, topObject.transform.position.y, topObject.transform.position.z + moveVec.z);
         }
         if (Input.GetKey(KeyCode.RightArrow))
         {
-            topObject.transform.position = new Vector3(topObject.transform.position.x + keyMoveSpeed * Time.deltaTime, topObject.transform.position.y, topObject.transform.position.z);
+            Vector3 moveVec = topObject.transform.right * keyMoveSpeed * Time.deltaTime;
+            topObject.transform.position = new Vector3(topObject.transform.position.x + moveVec.x, topObject.transform.position.y, topObject.transform.position.z + moveVec.z);
         }
         if (Input.GetKey(KeyCode.A))
         {
@@ -275,6 +284,11 @@ public class OSCServer : MonoBehaviour {
         if (Input.GetKey(KeyCode.W))
         {
             topObject.transform.Rotate(0.0f, -1.0f * keyRotSpeed * Time.deltaTime, 0.0f);
+        }
+        if (Input.GetKey(KeyCode.P))
+        {
+            Instantiate(raibowCubeObject, new Vector3(topObject.transform.position.x + Random.insideUnitCircle.x * 0.5f,
+                topObject.transform.position.y + 1.0f, topObject.transform.position.z + Random.insideUnitCircle.y * 0.5f),Quaternion.identity);
         }
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
@@ -349,7 +363,7 @@ public class OSCServer : MonoBehaviour {
         var msg = message.address + ": ";
 
         // timestamp
-        msg += "(" + message.timestamp.ToLocalTime() + ") ";
+        // msg += "(" + message.timestamp.ToLocalTime() + ") ";
 
         if (message.address == "/blocks")
         {
@@ -368,6 +382,7 @@ public class OSCServer : MonoBehaviour {
                 count++;
             }
             moveSpike(values[0], values[1]);
+            textObject.GetComponent<TextMesh>().text = msg;
         }
 
         if (message.address == "/key1")
@@ -387,7 +402,16 @@ public class OSCServer : MonoBehaviour {
                 }
                 count++;
             }
-            moveRedBox(values[0], values[1]);
+            if ( index >= 48)
+            {
+                moveYellowBox(values[0], values[1]);
+                textLeftObject.GetComponent<TextMesh>().text = msg;
+            }
+            else
+            {
+                moveRedBox(values[0], values[1]);
+                textRightObject.GetComponent<TextMesh>().text = msg;
+            }
         }
 
         if (message.address == "/key2")
@@ -408,8 +432,10 @@ public class OSCServer : MonoBehaviour {
                 count++;
             }
             moveYellowBox(values[0], values[1]);
+            textLeftObject.GetComponent<TextMesh>().text = msg;
         }
-        Debug.Log(msg);
+        // Debug.Log(msg);
+        
     }
 
 }
